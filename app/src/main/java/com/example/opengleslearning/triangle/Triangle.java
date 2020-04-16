@@ -116,7 +116,7 @@ public class Triangle {
         GLES30.glUseProgram(program);
         //初始化旋转变化矩阵，刚开始是与y轴平齐，即面向我们的三角形
         Matrix.setRotateM(mMatrix,0,0,0,1,0);
-        //设置沿着z轴正向平移
+        //设置沿着z轴正向平移，让视图显的更大一些
         Matrix.translateM(mMatrix,0,0,0,1);
         //设置绕x轴旋转
         Matrix.rotateM(mMatrix,0,xAngle,1,0,0);

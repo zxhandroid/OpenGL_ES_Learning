@@ -14,21 +14,21 @@ import javax.microedition.khronos.opengles.GL10;
 public class TriangleSurfaceView extends GLSurfaceView {
     final float ANGLE_SPAN = 0.375f;    //每次旋转的角度
 
-    private final TraiangleRender render;
+    private final TriangleRender render;
 
     public TriangleSurfaceView(Context context) {
         super(context);
         //明确使用Gl ES 3.0来渲染
         this.setEGLContextClientVersion(3);
         //创建渲染器
-        render = new TraiangleRender();
+        render = new TriangleRender();
         //设置渲染器
         this.setRenderer(render);
         //设置渲染模式,为持续渲染
         this.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
-    private class TraiangleRender implements GLSurfaceView.Renderer {
+    private class TriangleRender implements GLSurfaceView.Renderer {
 
         private Triangle triangle;
 
@@ -54,7 +54,7 @@ public class TriangleSurfaceView extends GLSurfaceView {
             //设置平截头体,即定义一个投影矩阵
             Matrix.frustumM(Triangle.projectMatrix,0,-ratio,ratio,-1,1,1,10);
             //设置摄像机位置
-            Matrix.setLookAtM(Triangle.vMatrix,0,0,0,0,3,0,0,0,1,0);
+            Matrix.setLookAtM(Triangle.vMatrix,0,0,0,3,0,0,0,0,1,0);
         }
 
         @Override
