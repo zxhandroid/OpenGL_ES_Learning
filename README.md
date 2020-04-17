@@ -74,4 +74,88 @@ Dmeo 是画一个绕x轴不断旋转的三角形，刚开始别问为什么，�
         
       * 调用三角形对象的绘制方法开始绘制；
 
-4. 三角形渲染数据处理，主要封装在Triangle类中；       
+4. 三角形渲染数据处理，主要封装在Triangle类中，里面做了三个操作：
+   * 初始化三角形顶点数据（构造函数中）
+      * 定义顶点位置数组，三个顶点，每个顶点由x,y,z 坐标组成，坐标的范围一般在-1，1 之间，因为我们视口的大小就在这个范围，超出的话会被裁剪，所以会这个数组大小会为9。
+      三个顶点按逆时针的顺序排列；
+      * 分配顶点缓冲区大小， ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4); 因为是浮点数，占4个字节，所以要乘以4；
+      然后调用 vbb.order(ByteOrder.nativeOrder()); 进行字节排序；
+      * 然后将缓存区转换成浮点缓冲区，然后再把定义的浮点数组put进去，然后再定义读取位置为0;
+      * 再定义顶点颜色数组，流程类型顶点位置数组，颜色为rgba。然后分配顶点颜色缓冲区，转换成浮点缓冲区，再将数组put进去，定义读取位置为0;
+   * 初始化着色器程序（构造函数中）（有固定的步骤，ShaderUtil工具类中封装了，详细的可以看代码，注释都标注的很清楚）
+      * 加载顶点着色器脚本内容，用着色器语言编写的顶点着色器脚本，顶点数据会在这里进行一些计算、转换；
+      * 加载片元着色器脚本的内容，同样用着色器语言编写的，接收从顶点着色器中处理过来的数据，进行进一步渲染处理；
+      * 创建顶点着色器和片元着色器，然后创建着色器程序，将两者链接起来，就像两个管道一样，把它们接在一起，才能使用；
+      * 然后获取顶点相关属性的引用，这些引用后续要传入到渲染管理中的，aPosition，aColor 是定义在顶点颜色器的属性值，uMVPMatrix，是一致性属性，即每个顶点都具有的
+
+      ```
+         //获取顶点位置属性引用id
+         aPositionHandle = GLES30.glGetAttribLocation(program,"aPosition");
+         //获取顶点颜色属性引用id
+         aColorHandle = GLES30.glGetAttribLocation(program,"aColor");
+         //获取程序总变换矩阵引用id
+         uMVPMatrixHandle = GLES30.glGetUniformLocation(program,"uMVPMatrix");
+
+      ```
+   * 开始绘制，类中定义的绘制自身的方法
+      * 启用着色器程序，上面创建的着色器程序，通过  GLES30.glUseProgram(program); 启用
+      * 初始化旋转矩阵，然后往z轴正方向平移1个单位(当然不平移也行)，然后再设置旋转矩阵，绕x轴旋转；
+
+      ```
+         //初始化旋转变化矩阵，x,y,z必须要有一个为1，都为0,则矩阵相关变化但为0，这个理解清楚；
+         Matrix.setRotateM(mMatrix,0,0,0,0,1);
+         //设置沿着z轴正向平移，让视图显的更大一些
+         Matrix.translateM(mMatrix,0,0,0,1);
+         //设置绕x轴旋转，与setRotateM的区别就在于，rotateM 是旋转矩阵不断与角度变化的过程。
+         Matrix.rotateM(mMatrix,0,xAngle,1,0,0);
+
+      ```
+      * 将变化矩阵、顶点位置数据、顶点着色数据传入到渲染管线(这一块相对难理解)
+
+       getFinalMatrix(mMatrix)，获取最终变化矩阵。先将vMatrix(摄像机位置矩阵)与上一步我们初始化的旋转矩阵相乘，然后再将投影矩阵与上一次的乘积再相乘
+
+       ```
+            public static float[] getFinalMatrix(float[] spec){
+                mVPMatrix = new float[16];
+                //摄像机位置矩阵与传入矩阵相乘
+                Matrix.multiplyMM(mVPMatrix,0,vMatrix,0,spec,0);
+                //投影矩阵与上一步变化矩阵相乘并赋值到总变化矩阵mVPMatrix
+                Matrix.multiplyMM(mVPMatrix,0,projectMatrix,0,mVPMatrix,0);
+                return mVPMatrix;
+            }
+       ```
+
+      ```
+         //将变化矩阵传入渲染管线,
+         GLES30.glUniformMatrix4fv(uMVPMatrixHandle,1,false,getFinalMatrix(mMatrix),0);
+         //将顶点位置数据传入渲染管线（以浮点形式从顶点位置缓冲区中读取一次读取3位，跨度是 3*4）
+         GLES30.glVertexAttribPointer(aPositionHandle,3,GLES30.GL_FLOAT,false,3*4,vertexBuffer);
+         //将顶点颜色数据传入渲染管线（以浮点形式从打点颜色缓冲区中读取，一次读取4位，跨度是 4*4）
+         GLES30.glVertexAttribPointer(aColorHandle,4, GLES30.GL_FLOAT,false,4 * 4,colorBuffer);
+
+      ```
+
+      * 启用顶点位置与颜色数据
+
+      ```
+        //启用顶点位置数据
+        GLES30.glEnableVertexAttribArray(aPositionHandle);
+        //启用顶点着色数据
+        GLES30.glEnableVertexAttribArray(aColorHandle);
+      ```
+
+      * 最后，开始绘制三角形
+
+      ```
+         //绘制三角形，从0开始，绘制三个顶点
+         GLES30.glDrawArrays(GLES30.GL_TRIANGLES,0,vCount);
+      ```
+5.最后编译，就能在屏幕上看到不断旋转的三角形了。
+
+总结，跟以往面前对象编程不一样，这是面向过程的，必须一步一步来绘制，当中的难度有两个：
+    * 视景体与摄像机位置
+    * 矩阵变化
+    * 着色器编写
+
+
+
