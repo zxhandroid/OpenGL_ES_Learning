@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.opengleslearning.ortho.OrthoActivity;
+import com.example.opengleslearning.project.ProjectActivity;
 import com.example.opengleslearning.triangle.TriangleActivity;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements SampleAdapter.Ite
     private void initDatas() {
         datas.add("旋转三角形示例");
         datas.add("正交投影示例");
+        datas.add("透视投影示例");
     }
 
     private void initAdapter() {
@@ -48,6 +50,9 @@ public class MainActivity extends AppCompatActivity implements SampleAdapter.Ite
                 break;
             case 1:
                 jump2Activity(OrthoActivity.class);
+                break;
+            case 2:
+                jump2Activity(ProjectActivity.class);
                 break;
             default:
                 break;

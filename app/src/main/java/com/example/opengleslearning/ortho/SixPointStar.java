@@ -1,6 +1,7 @@
 package com.example.opengleslearning.ortho;
 
 import android.opengl.GLES30;
+import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import com.example.opengleslearning.utils.MatrixState;
@@ -42,7 +43,7 @@ public class SixPointStar {
      * @param r  六角形外角大圆半径
      * @param z  六角形z轴位置
      */
-    public SixPointStar(OrthoSurfaceView orthoSurfaceView, float R, float r, float z) {
+    public SixPointStar(GLSurfaceView orthoSurfaceView, float R, float r, float z) {
         //初始化顶点数据
         initVertexData(R, r, z);
         //initShader
@@ -54,7 +55,7 @@ public class SixPointStar {
      *
      * @param surfaceView
      */
-    private void initShader(OrthoSurfaceView surfaceView) {
+    private void initShader(GLSurfaceView surfaceView) {
         //加载顶点着色器脚本内容
         vertexShader = ShaderUtil.loadFromAssetsFile("vertex.sh", surfaceView.getResources());
         //加载片元着色器的脚本内容

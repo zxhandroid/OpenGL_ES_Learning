@@ -23,6 +23,11 @@ public class MatrixState {
         Matrix.orthoM(projectMatrix,0,left,right,bottom,top,near,far);
     }
 
+    //设置透视投影
+    public static void setProjectFrustum(float left,float right, float bottom,float top, float near ,float far  ){
+        Matrix.frustumM(projectMatrix,0,left,right,bottom,top,near,far);
+    }
+
     //获取最终变化矩阵
     public static float[] getFinalMatrix(float[] matrix) {
         MVPMatrix = new float[16];
